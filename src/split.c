@@ -1000,15 +1000,19 @@ show_frame_message (char *msg)
 rp_frame *
 find_frame_up (rp_frame *frame)
 {
-  rp_screen *s = frames_screen (frame);
+  rp_screen *s;
   rp_frame *cur;
+  int i;
 
-  list_for_each_entry (cur, &s->frames, node)
+  for (i = 0; i < num_screens; i++)
     {
-      if (frame->y == cur->y + cur->height)
+      s = &screens[i];
+
+      list_for_each_entry (cur, &s->frames, node)
         {
-          if (frame->x >= cur->x && frame->x < cur->x + cur->width)
-            return cur;
+          if (frame_top_abs (frame) == frame_bottom_abs (cur))
+            if (frame_right_abs (frame) >= frame_left_abs (cur) && frame_left_abs (frame) <= frame_right_abs (cur))
+              return cur;
         }
     }
 
@@ -1018,15 +1022,19 @@ find_frame_up (rp_frame *frame)
 rp_frame *
 find_frame_down (rp_frame *frame)
 {
-  rp_screen *s = frames_screen (frame);
+  rp_screen *s;
   rp_frame *cur;
+  int i;
 
-  list_for_each_entry (cur, &s->frames, node)
+  for (i = 0; i < num_screens; i++)
     {
-      if (frame->y + frame->height == cur->y)
+      s = &screens[i];
+
+      list_for_each_entry (cur, &s->frames, node)
         {
-          if (frame->x >= cur->x && frame->x < cur->x + cur->width)
-            return cur;
+          if (frame_bottom_abs (frame) == frame_top_abs (cur))
+            if (frame_right_abs (frame) >= frame_left_abs (cur) && frame_left_abs (frame) <= frame_right_abs (cur))
+              return cur;
         }
     }
 
@@ -1036,33 +1044,42 @@ find_frame_down (rp_frame *frame)
 rp_frame *
 find_frame_left (rp_frame *frame)
 {
-  rp_screen *s = frames_screen (frame);
+  rp_screen *s;
   rp_frame *cur;
+  int i;
 
-  list_for_each_entry (cur, &s->frames, node)
+  for (i = 0; i < num_screens; i++)
     {
-      if (frame->x == cur->x + cur->width)
+      s = &screens[i];
+
+      list_for_each_entry (cur, &s->frames, node)
         {
-          if (frame->y >= cur->y && frame->y < cur->y + cur->height)
-            return cur;
+          if (frame_left_abs (frame) == frame_right_abs (cur))
+            if (frame_top_abs (frame) >= frame_top_abs (cur) && frame_top_abs (frame) < frame_bottom_abs (cur))
+              return cur;
         }
     }
 
   return NULL;
 }
 
+
 rp_frame *
 find_frame_right (rp_frame *frame)
 {
-  rp_screen *s = frames_screen (frame);
+  rp_screen *s;
   rp_frame *cur;
+  int i;
 
-  list_for_each_entry (cur, &s->frames, node)
+  for (i = 0; i < num_screens; i++)
     {
-      if (frame->x + frame->width == cur->x)
+      s = &screens[i];
+
+      list_for_each_entry (cur, &s->frames, node)
         {
-          if (frame->y >= cur->y && frame->y < cur->y + cur->height)
-            return cur;
+          if (frame_right_abs (frame) == frame_left_abs (cur))
+            if (frame_top_abs (frame) >= frame_top_abs (cur) && frame_top_abs (frame) < frame_bottom_abs (cur))
+              return cur;
         }
     }
 
@@ -1072,12 +1089,13 @@ find_frame_right (rp_frame *frame)
 rp_frame *
 find_frame_number (int num)
 {
-  int i;
+  rp_screen *s;
   rp_frame *cur;
+  int i;
 
   for (i=0; i<num_screens; i++)
     {
-      rp_screen *s = &screens[i];
+      s = &screens[i];
 
       list_for_each_entry (cur, &s->frames, node)
         {
